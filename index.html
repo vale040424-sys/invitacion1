@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para ti</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+
+  :root{
+    --cream: #FBF3EC;
+    --paper: #FFFCF8;
+    --blush: #E9C8C8;
+    --blush-deep: #D9A9AC;
+    --rose: #B8677D;
+    --rose-dark: #8F4A5C;
+    --plum: #47303A;
+    --plum-soft: #6B4E58;
+    --gold: #C7A05E;
+    --sage: #8DA084;
+    --line: rgba(71,48,58,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(233,200,200,0.35), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(199,160,94,0.18), transparent 50%),
+      var(--cream);
+    font-family: 'Nunito', sans-serif;
+    color: var(--plum);
+    overflow-x:hidden;
+  }
+
+  .stage{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 16px;
+    position:relative;
+  }
+
+  /* ambient petals — subtle, slow, few */
+  .petal{
+    position:fixed;
+    top:-40px;
+    width:10px;
+    height:10px;
+    border-radius: 60% 0;
+    background: var(--blush-deep);
+    opacity:0.35;
+    animation: fall linear infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes fall{
+    0%{ transform: translateY(-5vh) rotate(0deg); }
+    100%{ transform: translateY(105vh) rotate(200deg); }
+  }
+
+  /* ---------- ENVELOPE ---------- */
+  .envelope-wrap{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .envelope-wrap.hidden{
+    opacity:0;
+    transform: scale(0.94);
+    pointer-events:none;
+    position:absolute;
+  }
+
+  .envelope{
+    --w: 300px;
+    --h: 195px;
+    width: var(--w);
+    height: var(--h);
+    position: relative;
+    cursor: pointer;
+    perspective: 1200px;
+  }
+
+  .env-body{
+    position:absolute;
+    inset:0;
+    background: linear-gradient(155deg, var(--paper), #F6ECE4);
+    border-radius: 6px;
+    box-shadow: 0 18px 40px -18px rgba(71,48,58,0.35), 0 2px 6px rgba(71,48,58,0.08);
+    overflow:hidden;
+  }
+  .env-body::before{
+    /* bottom triangle fold */
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height: 62%;
+    background: linear-gradient(155deg, #F3E4DA, #ECD6C9);
+    clip-path: polygon(0 0, 50% 62%, 100% 0, 100% 100%, 0 100%);
+  }
+  .env-body::after{
+    content:"";
+    position:absolute;
+    left:0; bottom:0;
+    width:50%; height:100%;
+    background: linear-gradient(100deg, rgba(71,48,58,0.06), transparent 60%);
+    clip-path: polygon(0 100%, 0 25%, 50% 62%, 0 100%);
+  }
+
+  .env-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 62%;
+    background: linear-gradient(200deg, var(--blush), var(--blush-deep));
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center;
+    transform: rotateX(0deg);
+    transition: transform 0.9s cubic-bezier(.6,-0.15,.3,1.2);
+    z-index:3;
+    box-shadow: 0 1px 3px rgba(71,48,58,0.15);
+  }
+
+  .envelope.open .env-flap{
+    transform: rotateX(180deg);
+  }
+
+  .seal{
+    position:absolute;
+    top: 52%;
+    left:50%;
+    transform: translate(-50%,-50%);
+    width:52px; height:52px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #C97A8C, var(--rose-dark) 75%);
+    box-shadow: 0 3px 8px rgba(71,48,58,0.35), inset 0 -2px 4px rgba(0,0,0,0.15);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:4;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+  .seal svg{ width:24px; height:24px; fill: var(--cream); opacity:0.9; }
+
+  .envelope.open .seal{
+    transform: translate(-50%,-50%) scale(0);
+    opacity:0;
+  }
+
+  .letter-peek{
+    position:absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 6%;
+    height: 78%;
+    background: var(--paper);
+    border-radius: 4px 4px 2px 2px;
+    box-shadow: 0 -2px 10px rgba(71,48,58,0.08);
+    transform: translateY(6%);
+    transition: transform 0.8s cubic-bezier(.2,.8,.2,1) 0.35s;
+    z-index:2;
+  }
+  .envelope.open .letter-peek{
+    transform: translateY(-46%);
+  }
+
+  .hint{
+    font-family:'Nunito', sans-serif;
+    font-weight:600;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color: var(--plum-soft);
+    opacity:0.8;
+    animation: pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:0.55; }
+    50%{ opacity:0.95; }
+  }
+
+  .to-label{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size: 22px;
+    color: var(--rose-dark);
+  }
+
+  /* ---------- LETTER CARD ---------- */
+  .letter-wrap{
+    width:100%;
+    max-width: 560px;
+    opacity:0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    position:relative;
+    z-index:1;
+  }
+  .letter-wrap.show{
+    opacity:1;
+    transform: translateY(0);
+  }
+
+  .letter{
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 44px 38px 38px;
+    box-shadow: 0 30px 60px -25px rgba(71,48,58,0.4), 0 4px 14px rgba(71,48,58,0.08);
+    position:relative;
+  }
+  .letter::before{
+    content:"";
+    position:absolute;
+    top:14px; left:14px; right:14px; bottom:14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    pointer-events:none;
+  }
+
+  .eyebrow{
+    text-align:center;
+    font-size:11px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color: var(--gold);
+    font-weight:700;
+    margin-bottom: 6px;
+  }
+
+  .title{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size: 30px;
+    text-align:center;
+    color: var(--rose-dark);
+    margin: 0 0 26px;
+  }
+
+  .body-text{
+    font-family:'Nunito', sans-serif;
+    font-weight:400;
+    font-size: 15.5px;
+    line-height: 1.85;
+    color: var(--plum);
+  }
+  .body-text p{ margin: 0 0 16px; }
+  .body-text .accent{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--rose-dark);
+  }
+
+  .divider{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin: 28px 0 26px;
+  }
+  .divider::before, .divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+  .divider svg{ width:16px; height:16px; fill: var(--gold); flex-shrink:0; }
+
+  .invite{
+    background: linear-gradient(160deg, #FBF1EC, #F5E4DC);
+    border-radius: 12px;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--line);
+  }
+  .invite-title{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--rose-dark);
+    text-align:center;
+    margin: 0 0 16px;
+  }
+
+  .invite-rows{
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .invite-row{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+  .invite-row .icon{
+    width:34px; height:34px;
+    flex-shrink:0;
+    border-radius:50%;
+    background: var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 2px 5px rgba(71,48,58,0.1);
+  }
+  .invite-row .icon svg{ width:16px; height:16px; fill: var(--rose); }
+  .invite-row .txt-label{
+    font-size: 10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--plum-soft);
+    opacity:0.75;
+    font-weight:700;
+    display:block;
+  }
+  .invite-row .txt-value{
+    font-size: 15px;
+    font-weight:600;
+    color: var(--plum);
+  }
+
+  /* ---------- RSVP ---------- */
+  .rsvp{
+    margin-top: 22px;
+    text-align:center;
+  }
+  .rsvp-prompt{
+    font-size: 13.5px;
+    color: var(--plum-soft);
+    margin: 0 0 14px;
+  }
+  .rsvp-btn{
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size: 14.5px;
+    letter-spacing:0.02em;
+    color: var(--cream);
+    background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+    border:none;
+    padding: 13px 30px;
+    border-radius: 30px;
+    cursor:pointer;
+    box-shadow: 0 10px 24px -10px rgba(143,74,92,0.6);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .rsvp-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -10px rgba(143,74,92,0.7);
+  }
+  .rsvp-btn:active{ transform: translateY(0); }
+  .rsvp-btn:focus-visible{
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  .confirmed{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--sage);
+    padding: 10px 0 2px;
+  }
+  .confirmed.show{ display:flex; animation: fadein 0.6s ease; }
+  .confirmed svg{ width:20px; height:20px; fill: var(--sage); flex-shrink:0; }
+  @keyframes fadein{
+    from{ opacity:0; transform: translateY(6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .sign-off{
+    text-align:center;
+    margin-top: 26px;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size: 16px;
+    color: var(--plum-soft);
+  }
+
+  @media (max-width: 420px){
+    .letter{ padding: 34px 22px 30px; }
+    .title{ font-size: 25px; }
+    .envelope{ --w: 260px; --h: 170px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="envelope-wrap" id="envelopeWrap">
+    <div class="to-label">Para ti</div>
+    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Abrir sobre para leer la carta">
+      <div class="env-body">
+        <div class="letter-peek"></div>
+      </div>
+      <div class="env-flap"></div>
+      <div class="seal">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-8-4.6-8-11.2C4 6 6.5 4 9.2 4c1.6 0 3 .8 2.8 2.8C12.8 4.8 14.2 4 15.8 4 18.5 4 21 6 21 9.8 21 16.4 12 21 12 21z"/></svg>
+      </div>
+    </div>
+    <div class="hint">toca el sobre para abrirlo</div>
+  </div>
+
+  <div class="letter-wrap" id="letterWrap">
+    <div class="letter">
+      <div class="eyebrow">Una carta para ti</div>
+      <h1 class="title">Lo siento, mi amor</h1>
+
+      <div class="body-text">
+        <p>Sé que hubieron palabras y acciones que hice y dije en un estado del cual no me acuerdo muy bien, palabras que no reflejan lo que hay en mi corazón y acciones que no quiero volver a repetir. Y aunque salieron de mi boca, quiero que sepas que no es lo que realmente siento ni quiero, porque lo único que tengo claro es lo mismo que te he dicho y demostrado.</p>
+
+        <p>A pesar de mis defectos y errores <span class="accent">(que quiero cambiar y mejorar por mí y por ti)</span> no podría siquiera pensar en perderte algún día, ¿cómo querría dejar ir al hombre de mis sueños?</p>
+
+        <p>Tú eres mi mejor amigo, mi apoyo, parte grande de mi felicidad, el hombre que no me cansaría de elegir a pesar de lo que pueda pasar. Y por eso te pido perdón nuevamente por haberte hecho dudar de eso.</p>
+
+        <p>Tenemos una conversación pendiente por cerrar y me gustaría que pudiéramos completarla lo más pronto. Así que si te parece, dejo esta invitación abierta a tu confirmación, con todas las ganas de poder terminar lo que empezamos a hablar.</p>
+      </div>
+
+      <div class="divider">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-8-4.6-8-11.2C4 6 6.5 4 9.2 4c1.6 0 3 .8 2.8 2.8C12.8 4.8 14.2 4 15.8 4 18.5 4 21 6 21 9.8 21 16.4 12 21 12 21z"/></svg>
+      </div>
+
+      <div class="invite">
+        <div class="invite-title">Te invito a hablar</div>
+        <div class="invite-rows">
+          <div class="invite-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zM5 9h14v11H5V9z"/></svg>
+            </div>
+            <div>
+              <span class="txt-label">Día</span>
+              <span class="txt-value">Jueves 16 de julio</span>
+            </div>
+          </div>
+          <div class="invite-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4V6h-2v7.4l5.2 3.1 1-1.7-4.2-2.4z"/></svg>
+            </div>
+            <div>
+              <span class="txt-label">Hora</span>
+              <span class="txt-value">Después del trabajo (6:30 p.m.)</span>
+            </div>
+          </div>
+          <div class="invite-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+            </div>
+            <div>
+              <span class="txt-label">Lugar</span>
+              <span class="txt-value">Cielo Rosa, Bosa</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rsvp">
+          <p class="rsvp-prompt">Espero tu respuesta</p>
+          <button class="rsvp-btn" id="rsvpBtn">Sí, ahí estaré</button>
+          <div class="confirmed" id="confirmed">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-8-4.6-8-11.2C4 6 6.5 4 9.2 4c1.6 0 3 .8 2.8 2.8C12.8 4.8 14.2 4 15.8 4 18.5 4 21 6 21 9.8 21 16.4 12 21 12 21z"/></svg>
+            <span>Nos vemos el jueves</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="sign-off">Con todo mi cariño.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const envelope = document.getElementById('envelope');
+  const envelopeWrap = document.getElementById('envelopeWrap');
+  const letterWrap = document.getElementById('letterWrap');
+  const rsvpBtn = document.getElementById('rsvpBtn');
+  const confirmed = document.getElementById('confirmed');
+
+  function openEnvelope(){
+    if(envelope.classList.contains('open')) return;
+    envelope.classList.add('open');
+    setTimeout(()=>{
+      envelopeWrap.classList.add('hidden');
+      letterWrap.classList.add('show');
+    }, 850);
+  }
+
+  envelope.addEventListener('click', openEnvelope);
+  envelope.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      openEnvelope();
+    }
+  });
+
+  rsvpBtn.addEventListener('click', ()=>{
+    rsvpBtn.style.display = 'none';
+    confirmed.classList.add('show');
+  });
+
+  // subtle ambient petals
+  const stage = document.querySelector('.stage');
+  const petalCount = 7;
+  for(let i=0; i<petalCount; i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = (Math.random()*100) + 'vw';
+    p.style.animationDuration = (14 + Math.random()*10) + 's';
+    p.style.animationDelay = (Math.random()*10) + 's';
+    p.style.opacity = 0.2 + Math.random()*0.25;
+    const size = 6 + Math.random()*8;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    document.body.appendChild(p);
+  }
+</script>
+
+</body>
+</html>
